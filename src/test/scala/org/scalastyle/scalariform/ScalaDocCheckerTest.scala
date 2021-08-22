@@ -166,7 +166,7 @@ class ScalaDocCheckerTest extends AssertionsForJUnit with CheckerTest {
            | * XXX
            | */
            |trait X {
-           |  %s${access} def foo[A, B, U](a: A, b: B): U = ???
+           |  %s$access def foo[A, B, U](a: A, b: B): U = ???
            |}
         """.stripMargin
       val annotatedFun =
@@ -175,7 +175,7 @@ class ScalaDocCheckerTest extends AssertionsForJUnit with CheckerTest {
            | * XXX
            | */
            |trait X {
-           |  %s${access} def foo[@unchecked A, @annotated B, U](@Field() a: A, @Field("b") b: B): U = ???
+           |  %s$access def foo[@unchecked A, @annotated B, U](@Field() a: A, @Field("b") b: B): U = ???
            |}
         """.stripMargin
       val proc1 =
@@ -184,7 +184,7 @@ class ScalaDocCheckerTest extends AssertionsForJUnit with CheckerTest {
            | * XXX
            | */
            |trait X {
-           |  %s${access} def foo[A, B, U](a: A, b: B): Unit = ()
+           |  %s$access def foo[A, B, U](a: A, b: B): Unit = ()
            |}
         """.stripMargin
       val proc2 =
@@ -193,7 +193,7 @@ class ScalaDocCheckerTest extends AssertionsForJUnit with CheckerTest {
            | * XXX
            | */
            |trait X {
-           |  %s${access} def foo[A, B, U](a: A, b: B) {}
+           |  %s$access def foo[A, B, U](a: A, b: B) {}
            |}
         """.stripMargin
       def doc(proc: Boolean) =
@@ -332,7 +332,7 @@ class ScalaDocCheckerTest extends AssertionsForJUnit with CheckerTest {
         s"""
            |$tlDoc
            |$container Foo {
-           |  %s${what}
+           |  %s$what
            |}
         """.stripMargin
       val doc =

@@ -42,14 +42,13 @@ import org.scalastyle.scalariform.VisitorHelper.visit
 
 /**
  * Checks that the ScalaDoc exists for all accessible members:
- * - classes, traits, case classes and objects
- * - methods
- * - vals, vars and types
+ *   - classes, traits, case classes and objects
+ *   - methods
+ *   - vals, vars and types
  *
- * The ScalaDoc's structure must satisfy the parameter of the constructor in case of
- * case classes and classes, or the parameter of the methods. The ScalaDoc must include
- * the type parameters. Finally, the ScalaDoc must include return description for non-Unit
- * returning methods.
+ * The ScalaDoc's structure must satisfy the parameter of the constructor in case of case classes and classes,
+ * or the parameter of the methods. The ScalaDoc must include the type parameters. Finally, the ScalaDoc must
+ * include return description for non-Unit returning methods.
  */
 class ScalaDocChecker extends CombinedChecker {
   protected val errorKey: String = "scaladoc"
@@ -253,7 +252,7 @@ class ScalaDocChecker extends CombinedChecker {
         val skip = t.modifiers.exists {
           case AccessModifier(pop, Some(_)) =>
             if (pop.text == "private") skipQualifiedPrivate else skipQualifiedProtected
-          case AccessModifier(pop, None)                                     => if (pop.text == "private") skipPrivate else skipProtected
+          case AccessModifier(pop, None) => if (pop.text == "private") skipPrivate else skipProtected
           case SimpleModifier(tk) if ignoreOverride && tk.text == "override" => true
           case _                                                             => false
         }
@@ -436,9 +435,12 @@ object ScalaDocChecker {
 
     /**
      * Take the ``raw`` and parse an instance of ``ScalaDoc``
-     * @param raw the token containing the ScalaDoc
-     * @param offset column number of scaladoc's first string
-     * @return the parsed instance
+     * @param raw
+     *   the token containing the ScalaDoc
+     * @param offset
+     *   column number of scaladoc's first string
+     * @return
+     *   the parsed instance
      */
     // scalastyle:off cyclomatic.complexity
     def apply(raw: Token, offset: Int): ScalaDoc = {
@@ -498,19 +500,27 @@ object ScalaDocChecker {
 
   /**
    * Models a parameter: either plain or type
-   * @param name the parameter name
-   * @param text the parameter text
+   * @param name
+   *   the parameter name
+   * @param text
+   *   the parameter text
    */
   private case class ScalaDocParameter(name: String, text: String)
 
   /**
    * Models the parsed ScalaDoc
-   * @param text arbitrary text
-   * @param params the parameters
-   * @param typeParams the type parameters
-   * @param returns the returns clause, if present
-   * @param throws the throws clause, if present
-   * @param indentStyle doc indent style
+   * @param text
+   *   arbitrary text
+   * @param params
+   *   the parameters
+   * @param typeParams
+   *   the type parameters
+   * @param returns
+   *   the returns clause, if present
+   * @param throws
+   *   the throws clause, if present
+   * @param indentStyle
+   *   doc indent style
    */
   private case class ScalaDoc(
     text: String,

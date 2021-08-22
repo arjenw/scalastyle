@@ -33,8 +33,10 @@ class CaseBraceChecker extends CombinedChecker {
 
   /**
    * Checks, if given case clause contains just block expression, without anything else.
-   * @param clause case clause to check
-   * @return position of block's left brace, if block found; None otherwise.
+   * @param clause
+   *   case clause to check
+   * @return
+   *   position of block's left brace, if block found; None otherwise.
    */
   private def justBlockPosition(clause: CaseClause) = {
     import clause.statSeq._

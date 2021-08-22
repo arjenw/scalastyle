@@ -147,8 +147,8 @@ class CheckerUtils(classLoader: Option[ClassLoader] = None) {
           c match {
             case c: FileChecker        => c.verify(file, c.level, lines, lines)
             case c: ScalariformChecker => c.verify(file, c.level, scalariformAst.ast, lines)
-            case c: CombinedChecker    => c.verify(file, c.level, CombinedAst(scalariformAst.ast, lines), lines)
-            case _                     => Nil
+            case c: CombinedChecker => c.verify(file, c.level, CombinedAst(scalariformAst.ast, lines), lines)
+            case _                  => Nil
           }
         )
         .filter(m => CommentFilter.filterApplies(m, commentFilters))
@@ -180,8 +180,8 @@ class CheckerUtils(classLoader: Option[ClassLoader] = None) {
   }
 
   /**
-   * if we pass an encoding in, then we only try that encoding.
-   * If there is no encoding passed, we try the default, then UTF-8, then UTF-16, then ISO-8859-1
+   * if we pass an encoding in, then we only try that encoding. If there is no encoding passed, we try the
+   * default, then UTF-8, then UTF-16, then ISO-8859-1
    */
   def readFile(file: String, encoding: Option[String])(implicit codec: Codec): String = {
     @tailrec

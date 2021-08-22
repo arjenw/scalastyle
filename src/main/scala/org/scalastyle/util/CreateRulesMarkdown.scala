@@ -87,7 +87,7 @@ object CreateRulesMarkdown {
     val header = List(
       s"""<a name="${id(c.className)}"></a>""",
       "",
-      s"""### ${c.className} - ${desc}""",
+      s"""### ${c.className} - $desc""",
       "",
       " * id - " + c.id,
       " * description - " + desc,

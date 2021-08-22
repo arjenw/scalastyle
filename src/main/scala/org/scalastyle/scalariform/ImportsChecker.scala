@@ -157,30 +157,27 @@ class ImportGroupingChecker extends ScalariformChecker {
 }
 
 /**
- * Style checker that enforces import ordering. The following configuration parameters are
- * available:
+ * Style checker that enforces import ordering. The following configuration parameters are available:
  *
- *  - groups: a comma-separated list of group names to consider.
- *  - maxBlankLines: maximum number of blank lines to allow between groups. The default is "1".
- *                   A value less than 1 disables the blank line limit.
- *  - group.[groupName]: a regular expression that matches imports that should be in the given
- *                       group.
- *  - lexicographic: if true, imports are ordered lexicographically (classes, wildcards, then
- *                   packages; case-sensitive ordering within); if false, apply the original
- *                   case-insensitive ordering (with wildcards coming first, before classes).
+ *   - groups: a comma-separated list of group names to consider.
+ *   - maxBlankLines: maximum number of blank lines to allow between groups. The default is "1". A value less
+ *     than 1 disables the blank line limit.
+ *   - group.[groupName]: a regular expression that matches imports that should be in the given group.
+ *   - lexicographic: if true, imports are ordered lexicographically (classes, wildcards, then packages;
+ *     case-sensitive ordering within); if false, apply the original case-insensitive ordering (with wildcards
+ *     coming first, before classes).
  *
- * For example, to check that "java" and "javax" imports are in a separate group at the top of the
- * import list, you'd use this config:
+ * For example, to check that "java" and "javax" imports are in a separate group at the top of the import
+ * list, you'd use this config:
  *
- *  <parameter name="groups">java,others</parameter>
- *  <parameter name="group.java">javax?\..+</parameter>
- *  <parameter name="group.other">.+</parameter>
+ * <parameter name="groups">java,others</parameter> <parameter name="group.java">javax?\..+</parameter>
+ * <parameter name="group.other">.+</parameter>
  *
  * Other non-configurable rules:
- * - Within each group, import clauses are ordered alphabetically if 'lexicographic' is
- *   specified; else puts wildcards, then classes and packages, with case-insensitive sort.
- * - In multi-import statements, entries are ordered alphabetically, with method / packages
- *   (assumed to be any string starting with a lower case letter) coming before classes.
+ *   - Within each group, import clauses are ordered alphabetically if 'lexicographic' is specified; else puts
+ *     wildcards, then classes and packages, with case-insensitive sort.
+ *   - In multi-import statements, entries are ordered alphabetically, with method / packages (assumed to be
+ *     any string starting with a lower case letter) coming before classes.
  *
  * Currently, this checker only looks at the top-level list of imports.
  */
@@ -201,7 +198,7 @@ class ImportOrderChecker extends ScalariformChecker {
     // Note that any exceptions thrown here are swallowed by CheckerUtils and ignored...
     require(parameters.contains("groups"))
     groups = parameters("groups").split(",").toSeq.map { name =>
-      name -> Pattern.compile(parameters(s"group.${name}"))
+      name -> Pattern.compile(parameters(s"group.$name"))
     }
     maxBlankLines = parameters.getOrElse("maxBlankLines", "1").toInt
     lexicographic = parameters.get("lexicographic").map(_.toBoolean).getOrElse(false)
@@ -295,8 +292,8 @@ class ImportOrderChecker extends ScalariformChecker {
   }
 
   /**
-   * When the current import group changes, checks that there is a single empty line between
-   * the last import statement in the previous group and the first statement in the new one.
+   * When the current import group changes, checks that there is a single empty line between the last import
+   * statement in the previous group and the first statement in the new one.
    */
   private def checkGroupSeparation(
     lastGroup: Int,
@@ -360,8 +357,7 @@ class ImportOrderChecker extends ScalariformChecker {
   /**
    * Compares two import statements, comparing each component of the import separately.
    *
-   * The import statements can end with a dangling `.`, meaning they're the start of a
-   * multi-import block.
+   * The import statements can end with a dangling `.`, meaning they're the start of a multi-import block.
    */
   private[scalariform] def compareImports(imp1: String, imp2: String): Int = {
     val imp1Components = imp1.split("[.]")
@@ -388,15 +384,17 @@ class ImportOrderChecker extends ScalariformChecker {
   }
 
   /**
-   * Compares two strings that represent a single imported artifact; this considers lower-case
-   * names as being "lower" than upper case ones.
+   * Compares two strings that represent a single imported artifact; this considers lower-case names as being
+   * "lower" than upper case ones.
    *
-   * @param name1 First name.
-   * @param name2 Second name.
-   * @param isImport If true, orders names according to the import statement rules:
-   *                 "_" should come before other names, and capital letters should come
-   *                 before lower case ones. Otherwise, do the opposite, which are the ordering
-   *                 rules for names within a selector.
+   * @param name1
+   *   First name.
+   * @param name2
+   *   Second name.
+   * @param isImport
+   *   If true, orders names according to the import statement rules: "_" should come before other names, and
+   *   capital letters should come before lower case ones. Otherwise, do the opposite, which are the ordering
+   *   rules for names within a selector.
    */
   private[scalariform] def compareNames(name1: String, name2: String, isImport: Boolean): Int = {
     if (lexicographic && isImport)

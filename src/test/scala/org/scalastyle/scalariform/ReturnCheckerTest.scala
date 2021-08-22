@@ -25,7 +25,8 @@ import org.scalatestplus.junit.AssertionsForJUnit
 /**
  * Test that checks that return keyword should not be used
  *
- * @author Galder Zamarreño
+ * @author
+ *   Galder Zamarreño
  */
 class ReturnCheckerTest extends AssertionsForJUnit with CheckerTest {
 

@@ -91,7 +91,7 @@ class PackageNamesChecker extends ScalariformChecker {
       tokens match {
         case Nil                                   => (Nil, Nil)
         case hd :: tail if hd.tokenType == PACKAGE => tail.span(isPartOfPackageName)
-        case l: Any                                => getNextPackageName(l.dropWhile(tok => tok.tokenType != PACKAGE))
+        case l: Any => getNextPackageName(l.dropWhile(tok => tok.tokenType != PACKAGE))
       }
 
     @annotation.tailrec

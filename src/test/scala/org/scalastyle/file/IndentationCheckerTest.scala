@@ -171,8 +171,8 @@ class A {
   }
 
   /**
-   * Check that we don't accidentally think that val defintions are method defintions just because
-   * it includes the word def, and complain about subsequent method argument indentation
+   * Check that we don't accidentally think that val defintions are method defintions just because it includes
+   * the word def, and complain about subsequent method argument indentation
    */
   @Test def testValNotConsideredMethod(): Unit = {
     val source =
