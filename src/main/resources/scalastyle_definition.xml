@@ -218,4 +218,9 @@
   </checker>
   <checker class="org.scalastyle.scalariform.WhileBraceChecker" id="while.brace" defaultLevel="warning"/>
   <checker class="org.scalastyle.scalariform.CaseBraceChecker" id="disallow.case.brace" defaultLevel="warning"/>
+  <checker class="org.scalastyle.scalariform.ImportControlChecker" id="import.control" defaultLevel="warning">
+    <parameters>
+      <parameter name="file" type="string" />
+    </parameters>
+  </checker>
 </scalastyle-definition>

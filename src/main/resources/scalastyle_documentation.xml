@@ -905,4 +905,19 @@ To fix it, replace the (unicode operator) `⇒` with `=>`.
       ]]>
     </example-configuration>
   </check>
+  <check id="import.control">
+    <justification>
+      Allow fine-grained control over imports in files and packages.
+    </justification>
+    <extra-description>The import control specification is the exact same as Checkstyle's Import Control checker. See https://checkstyle.sourceforge.io/config_imports.html#ImportControl for more information.</extra-description>
+    <example-configuration>
+      <![CDATA[
+    <check level="warning" class="org.scalastyle.scalariform.ImportControlChecker" enabled="true">
+      <parameters>
+        <parameter name="file">import-control.xml</parameter>
+      </parameters>
+    </check>
+ ]]>
+    </example-configuration>
+  </check>
 </scalastyle-documentation>

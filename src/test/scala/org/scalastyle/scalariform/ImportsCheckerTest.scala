@@ -20,6 +20,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.scalastyle.file.CheckerTest
 import org.scalatestplus.junit.AssertionsForJUnit
+import org.scalastyle.scalariform.ImportControlConfig.{MatchResult, PackageMatcher, RuleSet, SourceIdentifier}
+import org.scalastyle.scalariform.ImportControlConfig.SourceIdentifier.{SourceIdentifier, Subpackage}
+
+import scala.xml.Source
 
 // scalastyle:off magic.number multiple.string.literals
 
@@ -477,4 +481,180 @@ class ImportOrderCheckerTest extends AssertionsForJUnit with CheckerTest {
 
   private def errorKey(subkey: String): Option[String] = Some(key + "." + subkey)
 
+}
+
+class ImportControlCheckerTest extends AssertionsForJUnit with CheckerTest {
+
+  import org.scalatest.matchers.should.Matchers._
+
+  val key = "import.control"
+  val classUnderTest = classOf[ImportControlChecker]
+
+  @Test def testRuleSetMatching(): Unit = {
+    import TestTools.MatcherResultOps
+    val config = ImportControlConfig(Source.fromString("""
+                                                         |<import-control pkg="com.test" regex="false">
+                                                         | <subpackage name="sub">
+                                                         |   <file name="MyFile" />
+                                                         | </subpackage>
+                                                         | <subpackage name="subpack.*">
+                                                         |   <file name="MyFile" />
+                                                         | </subpackage>
+                                                         | <file name="MyFile" />
+                                                         |</import-control>
+                                                         |""".stripMargin))
+
+    val rootPartialMatch = MatchResult(config, exactMatch = false)
+    val rootExactMatch = MatchResult(config, exactMatch = true)
+    val exact = true
+    config.determineRulesSet("com.mismatch", "MyFile") shouldBe RuleSet(Nil)
+    config.determineRulesSet("com.test", "MyFile") shouldBe RuleSet(
+      List(rootPartialMatch.file("MyFile"), rootExactMatch)
+    )
+    config.determineRulesSet("com.test", "OtherFile") shouldBe RuleSet(List(rootExactMatch))
+    config.determineRulesSet("com.test.submismatch", "MyFile") shouldBe RuleSet(List(rootPartialMatch))
+    config.determineRulesSet("com.test.subpackage", "SomeFile") shouldBe RuleSet(
+      List(rootPartialMatch.subpackage("subpack.*", exact), rootPartialMatch)
+    )
+    config.determineRulesSet("com.test.subpackage", "MyFile") shouldBe RuleSet(
+      List(
+        rootPartialMatch.subpackage("subpack.*").file("MyFile"),
+        rootPartialMatch.subpackage("subpack.*", exact),
+        rootPartialMatch
+      )
+    )
+    config.determineRulesSet("com.test.subpackage.subsub", "SomeFile") shouldBe RuleSet(
+      List(rootPartialMatch.subpackage("subpack.*", exact), rootPartialMatch)
+    )
+    config.determineRulesSet("com.testpackage", "MyFile") shouldBe RuleSet(Nil)
+    config.determineRulesSet("com.test.sub", "SomeFile") shouldBe RuleSet(
+      List(rootPartialMatch.subpackage("sub", exact), rootPartialMatch)
+    )
+    config.determineRulesSet("com.test.sub", "MyFile") shouldBe RuleSet(
+      List(
+        rootPartialMatch.subpackage("sub").file("MyFile"),
+        rootPartialMatch.subpackage("sub", exact),
+        rootPartialMatch
+      )
+    )
+  }
+
+  @Test def testImportMatching(): Unit = {
+    import TestTools.RuleSetOp
+    val config = ImportControlConfig(
+      Source.fromString("""
+                          |<import-control pkg="com.test" regex="false">
+                          | <allow pkg="com.allowed" exact-match="false" local-only="false" />
+                          | <allow pkg="com.other.allowed" exact-match="false" local-only="true" />
+                          | <subpackage name="sub" strategyOnMismatch="delegateToParent">
+                          |   <file name="MyFile">
+                          |     <allow pkg="com.ext" />
+                          |     <allow class="com.disallowed.SomeClass" />
+                          |     <disallow pkg="com.disallowed" />
+                          |     <allow class="com.disallowed.OtherClass" regex="false"/>
+                          |   </file>
+                          | </subpackage>
+                          | <subpackage name="subpack.*" strategyOnMismatch="allowed" />
+                          | <subpackage name="test.sub" strategyOnMismatch="disallowed" regex="false"/>
+                          | <file name="MyFile">
+                          |   <allow pkg="com.other" />
+                          | </file>
+                          |</import-control>
+                          |""".stripMargin)
+    )
+
+    config.determineRulesSet("com.mismatch", "MyFile").isAllowed("com.allowed.SomeClass") shouldBe false
+    config.determineRulesSet("com.test", "MyFile").isAllowed("com.allowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test", "MyFile").isAllowed("com.disallowed.SomeClass") shouldBe false
+    config.determineRulesSet("com.test", "MyFile").isAllowed("com.other.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.ext") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.ext.AClass") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.ext.sub.AClass") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.disallowed.AClass") shouldBe false
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.disallowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.disallowed.OtherClass") shouldBe false
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.allowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.whatever.SomeClass") shouldBe false
+    config.determineRulesSet("com.test.sub", "MyFile").isAllowed("com.other.allowed.SomeClass") shouldBe false
+    config.determineRulesSet("com.test", "MyFile").isAllowed("com.other.allowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test", "SomeFile").isAllowed("com.other.allowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.subpack", "MyFile").isAllowed("com.whatever.SomeClass") shouldBe true
+    config
+      .determineRulesSet("com.test.subpack.sub", "MyFile")
+      .isAllowed("com.whatever.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.testasub", "MyFile").isAllowed("com.allowed.SomeClass") shouldBe true
+    config.determineRulesSet("com.test.test.sub", "MyFile").isAllowed("com.allowed.SomeClass") shouldBe false
+  }
+
+  @Test def testWithSource(): Unit = {
+    val source =
+      """package com
+        |package test
+        |
+        |import com.allowed.MyClass
+        |import com.allowed.{Class1, Class2 => Renamed}
+        |import com.allowed.sub._
+        |import com.disallowed.SomeClass
+        |import com.disallowed.{Class1, Class2 => Renamed}
+        |import com.disallowed.sub._
+        |import com.disallowed.SomeClass._
+        |import com.allowed
+        |import allowed.MyOtherClass
+        |import com.disallowed
+        |import disallowed.MyOtherClass
+        |""".stripMargin
+
+    val config =
+      """
+        |<import-control pkg="com.test">
+        | <allow pkg="com.allowed" exact-match="false" local-only="false" />
+        |</import-control>
+        |""".stripMargin
+
+    val expected = List(
+      columnError(7, 0, args = List("com.disallowed.SomeClass", "mismatch strategy", "[root] 'com.test'")),
+      columnError(8, 23, args = List("com.disallowed.Class1", "mismatch strategy", "[root] 'com.test'")),
+      columnError(8, 31, args = List("com.disallowed.Class2", "mismatch strategy", "[root] 'com.test'")),
+      columnError(9, 0, args = List("com.disallowed.sub._", "mismatch strategy", "[root] 'com.test'")),
+      columnError(10, 0, args = List("com.disallowed.SomeClass._", "mismatch strategy", "[root] 'com.test'")),
+      columnError(13, 0, args = List("com.disallowed", "mismatch strategy", "[root] 'com.test'")),
+      columnError(14, 0, args = List("com.disallowed.MyOtherClass", "mismatch strategy", "[root] 'com.test'"))
+    )
+
+    val sep = java.io.File.separator
+    assertErrors(
+      expected,
+      source,
+      params = Map("inline" -> config),
+      customFileName = s"com${sep}test${sep}Test.scala"
+    )
+  }
+
+  object TestTools {
+    implicit class MatcherResultOps(matchResult: MatchResult) {
+      private def childSources: List[SourceIdentifier] =
+        matchResult.ruleContainer match {
+          case packageMatcher: PackageMatcher => packageMatcher.childSources
+          case _                              => Nil
+        }
+
+      def subpackage(name: String, exactMatch: Boolean = false): MatchResult =
+        childSources
+          .collectFirst {
+            case s: Subpackage if s.name == name => MatchResult(s, exactMatch)
+          }
+          .getOrElse(fail(s"Can't find subpackage with name '$name'"))
+
+      def file(name: String): MatchResult =
+        childSources
+          .collectFirst {
+            case f: SourceIdentifier.File if f.name == name => MatchResult(f, exactMatch = true)
+          }
+          .getOrElse(fail(s"Can't find file with name '$name'"))
+    }
+
+    implicit class RuleSetOp(ruleSet: RuleSet) {
+      def isAllowed(forImport: String): Boolean = ruleSet.validateImport(forImport).allowed
+    }
+  }
 }

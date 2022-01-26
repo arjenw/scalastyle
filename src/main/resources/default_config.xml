@@ -309,4 +309,9 @@
   </check>
   <check class="org.scalastyle.scalariform.CurliesImportChecker" level="warning" enabled="false" />
   <check class="org.scalastyle.scalariform.ThrowChecker" level="warning" enabled="true" />
+  <check level="warning" class="org.scalastyle.scalariform.ImportControlChecker" enabled="true">
+    <parameters>
+      <parameter name="file"><![CDATA[import-control.xml]]></parameter>
+    </parameters>
+  </check>
 </scalastyle>
