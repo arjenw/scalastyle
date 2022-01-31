@@ -1,0 +1,13 @@
+<import-control pkg="org.scalastyle" regex="false">
+    <allow pkg="org.scalastyle" exact-match="false" local-only="false" regex="false" />
+    <allow pkg="java" exact-match="false" local-only="false" />
+    <allow pkg="scala" exact-match="false" local-only="false" />
+    <allow pkg="(?:_root_\.)?scalariform" exact-match="false" local-only="false" />
+    <allow pkg="com.typesafe.config" exact-match="false" regex="false" />
+    <subpackage name="file">
+        <disallow pkg="(?:_root_\.)?org.scalariform" exact-match="false" />
+    </subpackage>
+    <subpackage name="util">
+        <allow pkg="com.typesafe.config" exact-match="false" regex="false" />
+    </subpackage>
+</import-control>
